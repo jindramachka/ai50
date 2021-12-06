@@ -1,0 +1,70 @@
+Node
+    _init_
+        state d
+        parent d
+        action (up/down/left/right, (row, col))
+
+StackFrontier
+    _init_
+        frontier
+    add
+    contains_state
+    empty
+    remove
+        node d
+
+QueueFrontier
+
+Maze
+    _init_
+        contents[row][col] d
+        height
+        width
+        Maze.start d
+        Maze.goal d
+        walls (True = wall)
+        Maze.solution = None -> (actions = up/..., d)
+    print
+        solution = Maze.solution[1] = set of the states of all the nodes that were in the solution
+    neighbors
+        row, col
+        result = list of nearby nodes directions
+    solve
+    output_image
+
+StackFrontier
+    add
+    contains_state
+    empty
+    remove
+
+MazeFrontier
+    print
+    neighbors
+    solve
+    output_image
+
+
+1. Call Maze(filename) and save the instance into variable m
+    read file into contents
+    read height and width
+    determine where are walls and where are the possible ways (list of lists of bools)
+    define start and goal of the maze as m.start and m.goal (directions)
+2. Call m.print()
+    print the unsolved maze
+3. Call m.solve() (actual search algorithm)
+    set m.num_explored to 0
+    set start as Node(state=m.start)
+    initialize frontier and add the start state to frontier.frontier (list of directions of nodes)
+    m.explored = set()
+    repeat:
+        if frontier.empty() -> n solution
+        remove current node from frontier and save it into var node
+        if node.state is m.goal, determine m.solution (actions, cells)
+        add node.state into explored set
+        if neighbor node is not already in the frontier and in the explored set, add it into frontier.frontier
+4. Call m.print again
+    print the solved maze
+
+
+
