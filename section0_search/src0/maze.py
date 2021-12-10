@@ -47,6 +47,43 @@ class QueueFrontier(StackFrontier):
             self.frontier = self.frontier[1:]
             return node
 
+class InformedFrontier(StackFrontier):
+    def __init__(self, goal):
+        self.frontier = []
+        self.goalCost = []
+        self.goal = goal
+
+    def add(self, node):
+        self.frontier.append(node)
+        self.goalCost.append(sum(map(lambda i, j: abs(i - j), self.goal, node.state)))
+    
+    def remove(self):
+        if self.empty():
+            raise Exception("empty frontier")
+        else:
+            lowest = self.goalCost[0]
+            for i in range(1, len(self.goalCost)):
+                if self.goalCost[i] < self.goalCost[i-1]:
+                    lowest = self.goalCost[i]
+            index = []
+            for i in range(len(self.goalCost)):
+                if self.goalCost[i] == lowest:
+                    index = i
+            node = self.frontier[index]
+    
+            if len(self.frontier) == 1:
+                node = self.frontier[0]
+                self.goalCost = []
+                self.frontier = []
+            else:
+                node = self.frontier[index]
+                self.goalCost.insert(0, self.goalCost.pop(index))
+                self.goalCost=self.goalCost[1:]
+                self.frontier.insert(0, self.frontier.pop(index))
+                self.frontier=self.frontier[1:]
+            print(self.goalCost)
+            return node
+        
 # Set up the maze
 class Maze():
 
@@ -140,7 +177,7 @@ class Maze():
 
         # Initialize frontier to just the starting position
         start = Node(state=self.start, parent=None, action=None)
-        frontier = QueueFrontier()
+        frontier = InformedFrontier(self.goal)
         frontier.add(start)
 
         # Initialize an empty explored set
@@ -156,6 +193,7 @@ class Maze():
             # Choose a node from the frontier
             node = frontier.remove()
             self.num_explored += 1
+
 
             if node.state == self.goal:
                 actions = []
@@ -177,6 +215,7 @@ class Maze():
             # Add nearby nodes to frontier
             for action, state in self.neighbors(node.state):
                 if not frontier.contains_state(state) and state not in self.explored:
+
                     child = Node(state=state, parent=node, action=action)
                     frontier.add(child)
             
