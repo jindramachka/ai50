@@ -33,7 +33,7 @@ class StackFrontier():
             raise Exception("empty frontier")
         else:
             node = self.frontier[-1]
-            self.frontier = self.frontier[:1]
+            self.frontier = self.frontier[:-1]
             return node
 
 # Frontier implemented as a queue
@@ -47,42 +47,93 @@ class QueueFrontier(StackFrontier):
             self.frontier = self.frontier[1:]
             return node
 
+# Implemented informed search algorithms
 class InformedFrontier(StackFrontier):
-    def __init__(self, goal):
+    def __init__(self, start, goal):
         self.frontier = []
-        self.goalCost = []
+        self.start = start
         self.goal = goal
+
+        # A list of estimated costs to goal of every node in the frontier (Manhattan distance heuristic)
+        self.goalCost = []
+        # A list of real costs to reach node from the start of every node in the frontier
+        self.nodeCost = []
 
     def add(self, node):
         self.frontier.append(node)
+
+        # Add estimated cost to goal from node to goalCost
         self.goalCost.append(sum(map(lambda i, j: abs(i - j), self.goal, node.state)))
-    
+
+        # Add the number of steps it takes to reach node to nodeCost
+        self.nodeCost.append(0)
+        while node.parent is not None:
+            self.nodeCost[-1] += 1
+            node = node.parent
+
+    # Implemented greedy best-first search algorithm
+    def greedy(self):
+
+        # Determine the lowest cost it takes to reach goal
+        lowest = self.goalCost[0]
+        for i in range(1, len(self.goalCost)):
+            if self.goalCost[i] < self.goalCost[i-1]:
+                lowest = self.goalCost[i]
+        
+        # Determine the index of the lowest goalCost
+        for i in range(len(self.goalCost)):
+            if self.goalCost[i] == lowest:
+                index = i
+
+        # Return node, emove node from frontier and goalCost
+        node = self.frontier[index]
+        self.goalCost.pop(index)
+        self.frontier.remove(node)
+        return node
+
+    # Implemented A* best-first search algorithm
+    def A_star(self):
+        # finalHeuristic = goalCost + nodeCost
+        finalHeuristic = tuple(sum(x) for x in zip(self.nodeCost, self.goalCost))
+
+        # Determine the lowest finalHeuristic
+        lowest = finalHeuristic[0]
+        for i in range(1, len(finalHeuristic)):
+            if finalHeuristic[i] < finalHeuristic[i-1]:
+                lowest = finalHeuristic[i]
+
+        # Determine the indexes of nodes with the lowest finalHeuristic
+        index = []
+        for i in range(len(finalHeuristic)):
+            if finalHeuristic[i] == lowest:
+                index.append(i)
+        
+        # If multiple nodes have the lowest finalHeuristic, choose the one with the lowest goalCost
+        if len(index) > 1:
+            # Determine the lowest cost it takes to reach goal
+            lowest = self.goalCost[0]
+            for i in range(1, len(index)): # len(index) because I want to focus only on nodes with the lowest finalHeuristic
+                if self.goalCost[i] < self.goalCost[i-1]:
+                    lowest = self.goalCost[i]
+            
+            # Determine the index of the lowest goalCost
+            index=[]
+            for i in range(len(self.goalCost)):
+                if self.goalCost[i] == lowest:
+                    index.append(i)
+
+        # Return node; remove node from frontier, goalCost and nodeCost
+        node = self.frontier[index[0]]
+        self.nodeCost.pop(index[0])
+        self.goalCost.pop(index[0])
+        self.frontier.remove(node)
+        return node
+
     def remove(self):
         if self.empty():
             raise Exception("empty frontier")
         else:
-            lowest = self.goalCost[0]
-            for i in range(1, len(self.goalCost)):
-                if self.goalCost[i] < self.goalCost[i-1]:
-                    lowest = self.goalCost[i]
-            index = []
-            for i in range(len(self.goalCost)):
-                if self.goalCost[i] == lowest:
-                    index = i
-            node = self.frontier[index]
-    
-            if len(self.frontier) == 1:
-                node = self.frontier[0]
-                self.goalCost = []
-                self.frontier = []
-            else:
-                node = self.frontier[index]
-                self.goalCost.insert(0, self.goalCost.pop(index))
-                self.goalCost=self.goalCost[1:]
-                self.frontier.insert(0, self.frontier.pop(index))
-                self.frontier=self.frontier[1:]
-            print(self.goalCost)
-            return node
+            return self.A_star()
         
 # Set up the maze
 class Maze():
@@ -177,7 +228,8 @@ class Maze():
 
         # Initialize frontier to just the starting position
         start = Node(state=self.start, parent=None, action=None)
-        frontier = InformedFrontier(self.goal)
+        frontier = InformedFrontier(self.start, self.goal)
+        #frontier = QueueFrontier()
         frontier.add(start)
 
         # Initialize an empty explored set
@@ -194,12 +246,11 @@ class Maze():
             node = frontier.remove()
             self.num_explored += 1
 
-
+            # If node is the goal, determine the solution
             if node.state == self.goal:
                 actions = []
                 cells = []
 
-                # If node is the goal, determine the solution
                 while node.parent is not None:
                     actions.append(node.action)
                     cells.append(node.state)
