@@ -66,5 +66,5 @@ MazeFrontier
 4. Call m.print again
     print the solved maze
 
-
+goalCost = goal - node
 
