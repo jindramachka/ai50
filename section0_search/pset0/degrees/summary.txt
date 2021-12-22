@@ -1,0 +1,18 @@
+call main()
+    define directory (argv[1] - small/large)
+    call load_data(directory)
+
+        define people = {id: {name: x, birth: x, movies: {m1, m2,...} }}
+
+        define names = {name: {id1, id2,...}}
+
+        define movies = {id: {name: x, year: x, stars: {s1, s2,...} }}
+
+    ask the user for initial state (name) and store its id it into variable source
+
+    ask the user for goal state (name) and store its id into variable target
+
+    call shortest_path(source, target) and store the path into variable path
+        return for example [(mid1, pid1), (mid2, pid2)] where source starred in movie mid1 with person pid1, person pid1 starred in movie mid2 with person pid2, and person pid2 is the target
+
+    articulate the path and print it
