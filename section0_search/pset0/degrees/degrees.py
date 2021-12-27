@@ -90,8 +90,6 @@ def shortest_path(source, target):
 
     If no possible path, returns None.
     """
-
-    print(len(people))
     start = Node(state=source, parent=None, action=None)
     frontier = QueueFrontier()
     frontier.add(start)
