@@ -58,17 +58,27 @@ def winner(board):
     """
     Returns the winner of the game, if there is one.
     """
+    
+
+
     raise NotImplementedError
 
 def all_equal(board):
     for row in board:
         if row.count(row[0]) == len(row):
             return True
+    return False
 
 def terminal(board):
     """
     Returns True if game is over, False otherwise.
     """
+    diagonals = [[board[0, 0], board[1, 1], board[2, 2]],
+                 [board[0, 2], board[1, 1], board[2, 0]]]
+
+    if all_equal(board) or all_equal(board.T) or all_equal(diagonals):
+        return True
+    
     # for row in board:
     #     if row.count(row[0]) == len(row):
     #         return True
@@ -76,10 +86,11 @@ def terminal(board):
     # for row in board.T:
     #     if row.count(row[0] == len(row)):
     #         return True
-    
-    # diagonal1 = [board[0, 0], board[1, 1], board[2, 2]]
-    # diagonal2 = [board[0, 2], board[1, 1], board[2, 0]]
-    raise NotImplementedError
+
+    # if diagonals[0].count(diagonals[0][0]) == len(diagonals[0]) or diagonals[1].count(diagonals[1][0]) == len(diagonals[1]):
+    #     return True
+
+    return False
 
 def utility(board):
     """
