@@ -3,6 +3,7 @@ Tic Tac Toe Player
 """
 
 import math
+from copy import deepcopy
 
 X = "X"
 O = "O"
@@ -41,42 +42,59 @@ def actions(board):
     Returns set of all possible actions (i, j) available on the board.
     """
     actions = set()
-    for row in board:
-        for col in row:
-            if col is EMPTY:
-                actions.append((row, col))
+    for row in range(len(board)):
+        for col in range(len(board[row])):
+            if board[row][col] is EMPTY:
+                actions.add((row, col))
     return actions
 
 def result(board, action):
     """
     Returns the board that results from making move (i, j) on the board.
     """
-    raise NotImplementedError
+    if action not in actions(board):
+        raise Exception("Not a valid action")
 
+    new_board = deepcopy(board)
+    
+    new_board[action[0]][action[1]] = player(board)
+
+    return new_board
+
+def diagonals(board):
+    return [[board[0][0], board[1][1], board[2][2]],
+            [board[0][2], board[1][1], board[2][0]]]
+
+def all_equal(board, winner=False):
+    for row in board:
+        if EMPTY not in row and row.count(row[0]) == len(row):
+            if winner==True:
+                if row[0] is X:
+                    return X
+                elif row[0] is O:
+                    return O
+            return True
+    return False
 
 def winner(board):
     """
     Returns the winner of the game, if there is one.
     """
+    print(list(map(list, zip(*board))))
+    options = [board, list(map(list, zip(*board))), diagonals(board)]
     
-
-
-    raise NotImplementedError
-
-def all_equal(board):
-    for row in board:
-        if row.count(row[0]) == len(row):
-            return True
-    return False
+    for option in options:
+        if all_equal(option):
+            return all_equal(option, winner=True)
+    
+    return None
 
 def terminal(board):
     """
     Returns True if game is over, False otherwise.
     """
-    diagonals = [[board[0, 0], board[1, 1], board[2, 2]],
-                 [board[0, 2], board[1, 1], board[2, 0]]]
 
-    if all_equal(board) or all_equal(board.T) or all_equal(diagonals):
+    if all_equal(board) or all_equal(list(map(list, zip(*board)))) or all_equal(diagonals(board)):
         return True
     
     # for row in board:
@@ -89,6 +107,13 @@ def terminal(board):
 
     # if diagonals[0].count(diagonals[0][0]) == len(diagonals[0]) or diagonals[1].count(diagonals[1][0]) == len(diagonals[1]):
     #     return True
+
+    filled = 0
+    for row in board:
+        if EMPTY not in row:
+            filled += 1
+    if filled == len(board):
+        return True
 
     return False
 
@@ -103,10 +128,33 @@ def utility(board):
     else:
         return 0
 
+def max_value(board):
+    if terminal(board):
+        return utility(board)
+    v = -math.inf
+    for action in actions(board):
+        #v = max(v, min_value(result(board, action))[0])
+        if v < min_value(result(board, action))[0]:
+            v = min_value(result(board, action))[0]
+            new_action = action
+    return v, new_action
+
+def min_value(board):
+    if terminal(board):
+        return utility(board)
+    v = math.inf
+    for action in actions(board):
+        #v = min(v, max_value(result(board, action))[0])
+        if v > max_value(result(board, action))[0]:
+            v = max_value(result(board, action))[0]
+            new_action = action
+    return v, new_action
+
 def minimax(board):
     """
     Returns the optimal action for the current player on the board.
     """
-    raise NotImplementedError
-
-print(initial_state())
+    if player(board) == X:
+        return max_value(board)[1]
+    elif player(board) == O:
+        return min_value(board)[1]
