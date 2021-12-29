@@ -22,8 +22,6 @@ def player(board):
     """
     Returns player who has the next turn on a board.
     """
-    # if terminal(board) == True
-
     turn = {X: 0, O: 0}
     for row in board:
         for col in row:
@@ -80,7 +78,6 @@ def winner(board):
     """
     Returns the winner of the game, if there is one.
     """
-    print(list(map(list, zip(*board))))
     options = [board, list(map(list, zip(*board))), diagonals(board)]
     
     for option in options:
@@ -96,17 +93,6 @@ def terminal(board):
 
     if all_equal(board) or all_equal(list(map(list, zip(*board)))) or all_equal(diagonals(board)):
         return True
-    
-    # for row in board:
-    #     if row.count(row[0]) == len(row):
-    #         return True
-
-    # for row in board.T:
-    #     if row.count(row[0] == len(row)):
-    #         return True
-
-    # if diagonals[0].count(diagonals[0][0]) == len(diagonals[0]) or diagonals[1].count(diagonals[1][0]) == len(diagonals[1]):
-    #     return True
 
     filled = 0
     for row in board:
@@ -133,28 +119,34 @@ def max_value(board):
         return utility(board)
     v = -math.inf
     for action in actions(board):
-        #v = max(v, min_value(result(board, action))[0])
-        if v < min_value(result(board, action))[0]:
-            v = min_value(result(board, action))[0]
-            new_action = action
-    return v, new_action
+        v = max(v, min_value(result(board, action)))
+    return v
 
 def min_value(board):
     if terminal(board):
         return utility(board)
     v = math.inf
     for action in actions(board):
-        #v = min(v, max_value(result(board, action))[0])
-        if v > max_value(result(board, action))[0]:
-            v = max_value(result(board, action))[0]
-            new_action = action
-    return v, new_action
+        v = min(v, max_value(result(board, action)))
+    return v
 
 def minimax(board):
     """
     Returns the optimal action for the current player on the board.
     """
-    if player(board) == X:
-        return max_value(board)[1]
-    elif player(board) == O:
-        return min_value(board)[1]
+    if board == initial_state():
+        return 0,1
+
+    best_value = (-math.inf if player(board) == X else math.inf)
+    for action in actions(board):
+        new_board = result(board, action)
+        if player(board) == X:
+            if min_value(new_board) > best_value:
+                best_value = min_value(new_board)
+                best_action = action
+        elif player(board) == O:
+            if max_value(new_board) < best_value:
+                best_value = max_value(new_board)
+                best_action = action
+        
+    return best_action
